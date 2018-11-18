@@ -6,7 +6,10 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => [
+        'log',
+        \app\cart\RegistryCart::class
+    ],
     'name' => 'Знание сила!',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
