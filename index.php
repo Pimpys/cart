@@ -1,41 +1,59 @@
 <?php
 
-abstract class Tile {
-    abstract function getWealthFactor();
+abstract class Item {
+
+    abstract function getPrice();
+
 }
 
-class Plains extends Tile {
-    private $wealthfactor = 2;
-    function getWealthFactor() {
-        return $this->wealthfactor;
+class Cart extends Item {
+
+    private $price = 600;
+
+    public function getPrice() {
+        return $this->price;
     }
 }
 
-abstract class TileDecorator extends Tile {
-    protected $tile;
-    function __construct( Tile $tile ) {
-        $this->tile = $tile;
+abstract class ItemDecorator extends Item {
+
+    protected $item;
+    protected $percent;
+
+    public function __construct( Item $item ) {
+        $this->item = $item;
     }
 }
 
-class DiamondDecorator extends TileDecorator {
-    function getWealthFactor() {
-        return $this->tile->getWealthFactor()+2;
+class BirthDayDecorator extends ItemDecorator
+{
+    protected $percent = 10;
+    public function getPrice()
+    {
+        return $this->item->getPrice() - ($this->item->getPrice() * $this->percent / 100);
     }
+
 }
 
-class PollutionDecorator extends TileDecorator {
-    function getWealthFactor() {
-        return $this->tile->getWealthFactor()-4;
+class PercentsDecorator extends ItemDecorator
+{
+    protected $percent = 20;
+
+    public function getPrice()
+    {
+        return $this->item->getPrice() - ($this->item->getPrice() * $this->percent / 100);
     }
+
 }
 
-$tile = new Plains();
-print $tile->getWealthFactor(); // 2
+$item = new Cart();
+print $item->getPrice(); // 600
+echo '<br/>';
 
-$tile = new DiamondDecorator( new Plains() );
-print $tile->getWealthFactor(); // 4
+$item = new BirthDayDecorator( new Cart() );
+print $item->getPrice(); // 540
+echo '<br/>';
 
-$tile = new PollutionDecorator(
-             new DiamondDecorator( new Plains() ));
-print $tile->getWealthFactor(); // 0
+$item = new PercentsDecorator(
+             new BirthDayDecorator( new Cart() ));
+print $item->getPrice(); // 270
