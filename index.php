@@ -1,59 +1,35 @@
 <?php
 
-abstract class Item {
+use src\AutoloadException;
+use src\Cart;
+use src\BirthDayDecorator;
+use src\PercentsDecorator;
 
-    abstract function getPrice();
+spl_autoload_register('autoload');
 
-}
-
-class Cart extends Item {
-
-    private $price = 600;
-
-    public function getPrice() {
-        return $this->price;
+function autoload($path){
+    if (preg_match('/\\\\/', $path)){
+        $path = str_replace('\\', DIRECTORY_SEPARATOR, $path);
     }
-}
-
-abstract class ItemDecorator extends Item {
-
-    protected $item;
-    protected $percent;
-
-    public function __construct( Item $item ) {
-        $this->item = $item;
+    if (!file_exists("{$path}.php")){
+        throw new AutoloadException($path);
     }
+    require_once "{$path}.php";
 }
 
-class BirthDayDecorator extends ItemDecorator
-{
-    protected $percent = 10;
-    public function getPrice()
-    {
-        return $this->item->getPrice() - ($this->item->getPrice() * $this->percent / 100);
-    }
+try {
+    $item = new Cart();
+    print $item->getPrice() . ' Это 100%'; // 600
+    echo '<br/>';
 
+    $item = new BirthDayDecorator(new Cart());
+    print $item->getPrice() . ' Это 90%'; // 540
+    echo '<br/>';
+
+    $item = new PercentsDecorator(
+        new BirthDayDecorator(new Cart()));//540
+    print $item->getPrice() . ' Это 80% от 540, скидка на скидку!'; // 432
+
+}catch (\Exception $e){
+    echo $e->getMessage();
 }
-
-class PercentsDecorator extends ItemDecorator
-{
-    protected $percent = 20;
-
-    public function getPrice()
-    {
-        return $this->item->getPrice() - ($this->item->getPrice() * $this->percent / 100);
-    }
-
-}
-
-$item = new Cart();
-print $item->getPrice(); // 600
-echo '<br/>';
-
-$item = new BirthDayDecorator( new Cart() );
-print $item->getPrice(); // 540
-echo '<br/>';
-
-$item = new PercentsDecorator(
-             new BirthDayDecorator( new Cart() ));
-print $item->getPrice(); // 270
